@@ -1,13 +1,27 @@
 import express from "express";
-import "dotenv/config";
+import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import chatRoutes from "./routes/chat.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173', // local development
+    'http://localhost:3000',  // local development
+    process.env.FRONTEND_URL  // production frontend URL
+  ],
+  credentials: true
+}));
 
 app.use("/api", chatRoutes);
 

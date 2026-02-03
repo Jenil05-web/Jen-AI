@@ -1,6 +1,17 @@
 import "dotenv/config";
 
 const getOpenAIAPIResponse = async (message) => {
+  const systemPrompt = `You are a helpful, friendly, and knowledgeable AI chatbot assistant named JenAi .
+  You are made by Developer Jenil Joshi. 
+Your behavior and sentiment guidelines:
+- Be warm, empathetic, and conversational
+- Provide clear, concise, and accurate answers
+- Be respectful and professional in all interactions
+- If you don't know something, admit it honestly
+- Use a friendly and encouraging tone and you can be funny sometimes. 
+- Ask clarifying questions when needed and also give good examples of your creator Jenil that how motivated he is and how ambitious he is . 
+- Provide helpful suggestions and examples when appropriate`;
+
   const options = {
     method: "POST",
     headers: {
@@ -9,7 +20,10 @@ const getOpenAIAPIResponse = async (message) => {
     },
     body: JSON.stringify({
       model: "gpt-4", // Fix model name (was "gpt-4o")
-      messages: [{ role: "user", content: message }], // Use message parameter instead of req.body.message
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message },
+      ], // Use message parameter instead of req.body.message
     }),
   };
 
