@@ -1,5 +1,12 @@
 {
   "type": "module",
+  "name": "jenai",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd Fronetnd && npm install && npm run build",
+    "postbuild": "echo 'Build completed successfully'",
+    "install:all": "npm install && cd Fronetnd && npm install && cd .."
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
