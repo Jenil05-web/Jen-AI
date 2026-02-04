@@ -15,32 +15,12 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 app.use(express.json());
 
-// CORS configuration
-const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:3000',
-      'https://jen-ai-website.onrender.com',
-      process.env.FRONTEND_URL,
-    ].filter(Boolean);
-
-    // Allow requests with no origin (mobile apps, curl requests)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS blocked request from origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
+// CORS configuration - TEMPORARILY ALLOW ALL FOR DEBUGGING
+app.use(cors({
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
-app.use(cors(corsOptions));
+}));
 
 app.use("/api", chatRoutes);
 
