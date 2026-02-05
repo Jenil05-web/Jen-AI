@@ -1,14 +1,11 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import chatRoutes from "./routes/chat.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.join(__dirname, ".env") });
+// Load .env only in local development
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
 
 const app = express();
 
@@ -22,6 +19,7 @@ app.get("/health", (req, res) => {
 });
 
 // ========== ROUTES ==========
+import chatRoutes from "./routes/chat.js";
 app.use("/api", chatRoutes);
 
 // ========== 404 HANDLER ==========
