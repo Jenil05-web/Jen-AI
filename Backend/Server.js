@@ -11,34 +11,56 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-//connect to mongoDB - declare first
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("MongoDB connected !");
-  } catch (err) {
-    console.error("MongoDB connection failed:", err);
-    // Don't crash server, just log error
-  }
-};
-
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// CORS MUST be before other middleware
+// ============ CORS - MUST BE FIRST ============
 app.use(cors());
 app.use(express.json());
 
-app.use("/api", chatRoutes);
-
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// ============ HEALTH CHECK ENDPOINT ============
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", message: "Server is running" });
 });
 
-//connect to mongoDB - non-blocking
-connectDB().catch(err => {
-  console.error("Failed to connect to MongoDB:", err);
+// ============ API ROUTES ============
+app.use("/api", chatRoutes);
+
+// ============ START SERVER ============
+const server = app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
+
+// ============ MONGODB CONNECTION (NON-BLOCKING) ============
+let mongoConnected = false;
+
+const connectDB = async () => {
+  try {
+    console.log(`🔄 Attempting MongoDB connection...`);
+    console.log(`📧 URI: ${process.env.MONGODB_URI?.substring(0, 50)}...`);
+    
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000, // 5 second timeout
+      retryWrites: true,
+    });
+    
+    mongoConnected = true;
+    console.log("✅ MongoDB connected!");
+  } catch (err) {
+    mongoConnected = false;
+    console.error("❌ MongoDB connection failed:", err.message);
+    console.error("⚠️  Server still running without database");
+  }
+};
+
+// Connect to MongoDB in background (don't block)
+connectDB().catch(err => console.error("Connection error:", err));
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received, shutting down gracefully");
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0);
+  });
 });
