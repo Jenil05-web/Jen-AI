@@ -14,21 +14,21 @@ router.post("/test", async (req, res) => {
       messages: [],
     });
     const response = await thread.save();
-    res.send(response);
+    res.json(response);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({error: "Internal Server Error"});
   }
 });
 router.get("/threads",async(req,res)=>{
     try{
         const threads = await Thread.find().sort({updatedAt : -1});
-        res.send(threads);
+        res.json(threads);
 
     }
     catch(err){
         console.error(err);
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({error: "Internal Server Error"});
     }
 })
 
@@ -37,13 +37,13 @@ router.get("/threads/:threadId", async (req, res) => {
   try {
     const thread = await Thread.findOne({ threadId });
     if (!thread) {
-      return res.status(404).send("Thread not found");
+      return res.status(404).json({error: "Thread not found"});
     }
     
-    res.send(thread);
+    res.json(thread);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({error: "Internal Server Error"});
   }
 });
 router.delete("/threads/:threadId", async (req, res) => {
@@ -51,19 +51,19 @@ router.delete("/threads/:threadId", async (req, res) => {
   try {
     const thread = await Thread.findOneAndDelete({ threadId });
     if (!thread) {
-      return res.status(404).send("Thread not found");
+      return res.status(404).json({error: "Thread not found"});
     }
-    res.send("Thread deleted successfully");
+    res.json({success: true, message: "Thread deleted successfully"});
   } catch (err) {
     console.error(err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({error: "Internal Server Error"});
   }
 });
 
 router.post("/chat", async (req, res) => {
   const { threadId, message } = req.body;
   if (!threadId || !message) {
-    return res.status(400).send("Bad Request");
+    return res.status(400).json({error: "Bad Request"});
   }
   try {
     let thread = await Thread.findOne({ threadId }); // Change const to let
@@ -84,10 +84,10 @@ router.post("/chat", async (req, res) => {
     thread.messages.push({ role: "assistant", content: aiResponse });
     thread.updatedAt = Date.now();
     await thread.save();
-    res.send(thread);
+    res.json(thread);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Something went wrong!");
+    res.status(500).json({error: "Something went wrong!"});
   }
 });
 export default router;

@@ -15,12 +15,29 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 app.use(express.json());
 
-// CORS configuration - TEMPORARILY ALLOW ALL FOR DEBUGGING
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://jen-ai-website.onrender.com',
+  '*' // Allow all for development - remove in production
+];
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes('*') || !origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.use("/api", chatRoutes);
 

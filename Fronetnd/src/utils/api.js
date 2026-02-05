@@ -1,10 +1,19 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
+// Helper function to handle fetch errors
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+    throw new Error(error.error || `HTTP Error: ${response.status}`);
+  }
+  return response.json();
+};
+
 // Get all threads
 export const getAllThreads = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/threads`);
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error fetching threads:', error);
     throw error;
@@ -15,7 +24,7 @@ export const getAllThreads = async () => {
 export const getThreadById = async (threadId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/threads/${threadId}`);
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error fetching thread:', error);
     throw error;
@@ -32,7 +41,7 @@ export const sendChatMessage = async (threadId, message) => {
       },
       body: JSON.stringify({ threadId, message }),
     });
-    return await response.json();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error sending message:', error);
     throw error;
@@ -45,7 +54,7 @@ export const deleteThreadById = async (threadId) => {
     const response = await fetch(`${API_BASE_URL}/threads/${threadId}`, {
       method: 'DELETE',
     });
-    return await response.text();
+    return await handleResponse(response);
   } catch (error) {
     console.error('Error deleting thread:', error);
     throw error;
