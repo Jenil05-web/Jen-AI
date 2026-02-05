@@ -27,8 +27,8 @@ router.get("/threads",async(req,res)=>{
 
     }
     catch(err){
-        console.error(err);
-        res.status(500).json({error: "Internal Server Error"});
+        console.error("❌ Error fetching threads:", err.message);
+        res.status(500).json({error: "Failed to fetch threads", details: err.message});
     }
 })
 
@@ -42,8 +42,8 @@ router.get("/threads/:threadId", async (req, res) => {
     
     res.json(thread);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({error: "Internal Server Error"});
+    console.error("❌ Error fetching thread:", err.message);
+    res.status(500).json({error: "Failed to fetch thread", details: err.message});
   }
 });
 router.delete("/threads/:threadId", async (req, res) => {
@@ -55,8 +55,8 @@ router.delete("/threads/:threadId", async (req, res) => {
     }
     res.json({success: true, message: "Thread deleted successfully"});
   } catch (err) {
-    console.error(err);
-    res.status(500).json({error: "Internal Server Error"});
+    console.error("❌ Error deleting thread:", err.message);
+    res.status(500).json({error: "Failed to delete thread", details: err.message});
   }
 });
 
@@ -86,8 +86,8 @@ router.post("/chat", async (req, res) => {
     await thread.save();
     res.json(thread);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({error: "Something went wrong!"});
+    console.error("❌ Error in chat:", err.message);
+    res.status(500).json({error: "Failed to process chat", details: err.message});
   }
 });
 export default router;
