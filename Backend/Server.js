@@ -11,44 +11,7 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-const app = express();
-const PORT = process.env.PORT || 8080;
-app.use(express.json());
-
-// CORS configuration
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'https://jen-ai-website.onrender.com'
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      // For debugging - allow all origins in development
-      callback(null, true);
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
-app.use(cors(corsOptions));
-
-app.use("/api", chatRoutes);
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  connectDB();
-});
-
-//connect to mongoDB
+//connect to mongoDB - declare first
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
@@ -58,5 +21,24 @@ const connectDB = async () => {
     console.log("MongoDB connected !");
   } catch (err) {
     console.error("MongoDB connection failed:", err);
+    // Don't crash server, just log error
   }
 };
+
+const app = express();
+const PORT = process.env.PORT || 8080;
+
+// CORS MUST be before other middleware
+app.use(cors());
+app.use(express.json());
+
+app.use("/api", chatRoutes);
+
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+//connect to mongoDB - non-blocking
+connectDB().catch(err => {
+  console.error("Failed to connect to MongoDB:", err);
+});
