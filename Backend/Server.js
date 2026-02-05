@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+import chatRoutes from "./routes/chat.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,33 +16,37 @@ const PORT = process.env.PORT || 8080;
 
 console.log("🚀 Starting server...");
 console.log(`📍 PORT: ${PORT}`);
-console.log(`🔒 CORS: Enabled for all origins`);
 
 // === MIDDLEWARE (in order) ===
-app.use(cors()); // CORS FIRST
+app.use(cors()); // CORS FIRST - this is critical!
 app.use(express.json());
 
-// === ROUTES ===
+// === HEALTH CHECK (always works) ===
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Only import routes if they exist
-try {
-  import("./routes/chat.js").then(({ default: chatRoutes }) => {
-    app.use("/api", chatRoutes);
-    console.log("✅ Chat routes loaded");
-  }).catch(err => {
-    console.error("⚠️  Chat routes failed to load:", err.message);
-  });
-} catch (err) {
-  console.error("⚠️  Error loading routes:", err.message);
-}
+// === ROUTES ===
+console.log("📦 Loading routes...");
+app.use("/api", chatRoutes);
+console.log("✅ Routes loaded successfully");
+
+// === 404 HANDLER ===
+app.use((req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
+
+// === ERROR HANDLER ===
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.message);
+  res.status(500).json({ error: "Internal Server Error", message: err.message });
+});
 
 // === START SERVER ===
-app.listen(PORT, () => {
-  console.log(`✅ Server is running on port ${PORT}`);
-  console.log(`🌐 Health check: http://localhost:${PORT}/health`);
+const server = app.listen(PORT, () => {
+  console.log(`✅ Server listening on port ${PORT}`);
+  console.log(`🌐 Health: http://localhost:${PORT}/health`);
+  console.log(`📡 API: http://localhost:${PORT}/api`);
 });
 
 // === CONNECT TO MONGODB (non-blocking) ===
@@ -50,18 +55,17 @@ import mongoose from "mongoose";
 (async () => {
   try {
     if (!process.env.MONGODB_URI) {
-      console.warn("⚠️  MONGODB_URI not set");
+      console.warn("⚠️  MONGODB_URI not set - database features will not work");
       return;
     }
     
     console.log("🔄 Connecting to MongoDB...");
     await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
-      retryWrites: true,
     });
-    console.log("✅ MongoDB connected successfully");
+    console.log("✅ MongoDB connected");
   } catch (err) {
-    console.error("❌ MongoDB connection failed:", err.message);
-    console.error("ℹ️  Server will continue running without database");
+    console.error("❌ MongoDB failed:", err.message);
+    console.warn("⚠️  Server running WITHOUT database - API calls may fail");
   }
 })();
