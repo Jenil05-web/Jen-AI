@@ -19,25 +19,27 @@ app.use(express.json());
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  'https://jen-ai-website.onrender.com',
-  '*' // Allow all for development - remove in production
+  'https://jen-ai-website.onrender.com'
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes('*') || !origin || allowedOrigins.includes(origin)) {
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // For debugging - allow all origins in development
+      callback(null, true);
     }
   },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+};
 
-// Handle preflight requests
-app.options('*', cors());
+app.use(cors(corsOptions));
 
 app.use("/api", chatRoutes);
 
