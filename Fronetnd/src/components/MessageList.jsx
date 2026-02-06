@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { User, Bot } from "lucide-react";
+import TypingMessage from "./TypingMessage";
 
 const MessageList = ({ messages, loading }) => {
   const messagesEndRef = useRef(null);
@@ -20,7 +21,11 @@ const MessageList = ({ messages, loading }) => {
             )}
           </div>
           <div className={`message-bubble ${msg.role}`}>
-            <p className="message-text">{msg.content}</p>
+            {msg.role === "assistant" ? (
+              <TypingMessage content={msg.content} speed={30} />
+            ) : (
+              <p className="message-text">{msg.content}</p>
+            )}
           </div>
         </div>
       ))}
