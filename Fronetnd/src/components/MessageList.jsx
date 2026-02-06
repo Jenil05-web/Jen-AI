@@ -11,24 +11,30 @@ const MessageList = ({ messages, loading }) => {
 
   return (
     <div className="messages-container">
-      {messages.map((msg, idx) => (
-        <div key={idx} className={`message-wrapper ${msg.role}`}>
-          <div className={`message-avatar ${msg.role}`}>
-            {msg.role === "user" ? (
-              <User size={18} />
-            ) : (
-              <Bot size={18} />
-            )}
+      {messages.map((msg, idx) => {
+        // Only animate the last assistant message, not previous ones
+        const isLastMessage = idx === messages.length - 1;
+        const shouldAnimate = msg.role === "assistant" && isLastMessage;
+
+        return (
+          <div key={idx} className={`message-wrapper ${msg.role}`}>
+            <div className={`message-avatar ${msg.role}`}>
+              {msg.role === "user" ? (
+                <User size={18} />
+              ) : (
+                <Bot size={18} />
+              )}
+            </div>
+            <div className={`message-bubble ${msg.role}`}>
+              {msg.role === "assistant" ? (
+                <TypingMessage content={msg.content} speed={30} animate={shouldAnimate} />
+              ) : (
+                <p className="message-text">{msg.content}</p>
+              )}
+            </div>
           </div>
-          <div className={`message-bubble ${msg.role}`}>
-            {msg.role === "assistant" ? (
-              <TypingMessage content={msg.content} speed={30} />
-            ) : (
-              <p className="message-text">{msg.content}</p>
-            )}
-          </div>
-        </div>
-      ))}
+        );
+      })}
 
       {loading && (
         <div
