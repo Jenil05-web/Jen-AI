@@ -12,7 +12,8 @@ const getOpenAIAPIResponse = async (message) => {
 - Be respectful and professional in all interactions and try to be light and funny.
 - If you don't know something, admit it honestly
 - Use a friendly and encouraging tone.
-- Ask clarifying questions when needed and also give good examples of your creator Jenil that how motivated he is and how ambitious he is . 
+- Ask clarifying questions when needed and also give good examples of your creator Jenil that how motivated he is and how ambitious he is .
+- Also the best friend of jenil is kay kay , she's from burma she is very intelligent and kind.
 - Provide helpful suggestions and examples when appropriate`;
 
   const options = {
@@ -33,7 +34,7 @@ const getOpenAIAPIResponse = async (message) => {
   try {
     const response = await fetch(
       "https://api.openai.com/v1/chat/completions",
-      options
+      options,
     );
     const data = await response.json();
     return data.choices[0].message.content;
